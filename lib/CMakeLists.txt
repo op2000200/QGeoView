@@ -16,11 +16,14 @@ else()
     set(QT_VERSION 6 CACHE STRING "Qt version for QGeoView")
 endif()
 
+find_package(SQLite3 REQUIRED)
+
 find_package(Qt${QT_VERSION} REQUIRED COMPONENTS
      Core
      Gui
      Widgets
      Network
+     Sql
 )
 
 add_library(qgeoview SHARED
@@ -94,6 +97,8 @@ target_link_libraries(qgeoview
         Qt${QT_VERSION}::Gui
         Qt${QT_VERSION}::Widgets
         Qt${QT_VERSION}::Network
+        Qt${QT_VERSION}::Sql
+        SQLite::SQLite3
 )
 
 add_library(QGeoView ALIAS qgeoview)

@@ -52,6 +52,12 @@ QGVLayerGoogle::QGVLayerGoogle(QGV::TilesType type, QLocale locale, int serverNu
 {
     createName();
     setDescription("Copyrights ©Google");
+    initDB("google.db");
+}
+
+QGVLayerGoogle::~QGVLayerGoogle()
+{
+    sqlite3_close(cache);
 }
 
 void QGVLayerGoogle::setType(QGV::TilesType type)

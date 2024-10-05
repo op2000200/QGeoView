@@ -22,6 +22,11 @@
 
 #include <QNetworkReply>
 
+#include <QSql>
+#include <QSqlQuery>
+#include <QSqlDatabase>
+#include <sqlite3.h>
+
 class QGV_LIB_DECL QGVLayerTilesOnline : public QGVLayerTiles
 {
     Q_OBJECT
@@ -31,12 +36,20 @@ public:
 
 protected:
     virtual QString tilePosToUrl(const QGV::GeoTilePos& tilePos) const = 0;
+    void initDB(QString name);
+    sqlite3 *cache;
 
 private:
     void request(const QGV::GeoTilePos& tilePos) override;
     void cancel(const QGV::GeoTilePos& tilePos) override;
     void onReplyFinished(QNetworkReply* reply, const QGV::GeoTilePos& tilePos);
     void removeReply(const QGV::GeoTilePos& tilePos);
+
+    bool isCached();
+    bool isOutdated();
+    void addToCache();
+    //what type ii getting from cache
+    void getFromCache();
 
 private:
     QMap<QGV::GeoTilePos, QNetworkReply*> mRequest;

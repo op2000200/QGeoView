@@ -27,6 +27,7 @@ class QGV_LIB_DECL QGVLayerBDGEx : public QGVLayerTilesOnline
 public:
     explicit QGVLayerBDGEx(int serverNumber = 4);
     explicit QGVLayerBDGEx(const QString& url);
+    ~QGVLayerBDGEx();
 
     void setUrl(const QString& url);
     QString getUrl() const;

@@ -35,6 +35,7 @@ QGVLayerOSM::QGVLayerOSM(int serverNumber)
 {
     setName("OpenStreetMap");
     setDescription("Copyrights ©OpenStreetMap");
+    initDB("osm.db");
 }
 
 QGVLayerOSM::QGVLayerOSM(const QString& url)
@@ -42,6 +43,11 @@ QGVLayerOSM::QGVLayerOSM(const QString& url)
 {
     setName("Custom");
     setDescription("OSM-like map");
+}
+
+QGVLayerOSM::~QGVLayerOSM()
+{
+    sqlite3_close(cache);
 }
 
 void QGVLayerOSM::setUrl(const QString& url)

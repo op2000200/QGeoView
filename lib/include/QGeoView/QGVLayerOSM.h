@@ -27,6 +27,7 @@ class QGV_LIB_DECL QGVLayerOSM : public QGVLayerTilesOnline
 public:
     explicit QGVLayerOSM(int serverNumber = 0);
     explicit QGVLayerOSM(const QString& url);
+    ~QGVLayerOSM();
 
     void setUrl(const QString& url);
     QString getUrl() const;

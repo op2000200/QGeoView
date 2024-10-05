@@ -39,6 +39,7 @@ QGVLayerBDGEx::QGVLayerBDGEx(int serverNumber)
 {
     setName("Banco de Dados Geográfico do Exército");
     setDescription("Copyrights: \"Termo de Uso do BDGEx\"");
+    initDB("bdgex.db");
 }
 
 QGVLayerBDGEx::QGVLayerBDGEx(const QString& url)
@@ -46,6 +47,11 @@ QGVLayerBDGEx::QGVLayerBDGEx(const QString& url)
 {
     setName("Padrão");
     setDescription("Carta Topográfica Matricial");
+}
+
+QGVLayerBDGEx::~QGVLayerBDGEx()
+{
+    sqlite3_close(cache);
 }
 
 void QGVLayerBDGEx::setUrl(const QString& url)

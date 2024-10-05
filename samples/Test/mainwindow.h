@@ -18,32 +18,23 @@
 
 #pragma once
 
-#include "QGVLayerTilesOnline.h"
+#include <QGroupBox>
+#include <QMainWindow>
 
-class QGV_LIB_DECL QGVLayerGoogle : public QGVLayerTilesOnline
+#include <QGeoView/QGVLayer.h>
+#include <QGeoView/QGVMap.h>
+
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit QGVLayerGoogle(QGV::TilesType type = QGV::TilesType::Schema,
-                            QLocale locale = QLocale(),
-                            int serverNumber = 0);
-    ~QGVLayerGoogle();
+    MainWindow();
+    ~MainWindow();
 
-    void setType(QGV::TilesType type);
-    void setLocale(const QLocale& locale);
-
-    QGV::TilesType getType() const;
-    QLocale getLocale() const;
+    QGroupBox* createOptionsList();
 
 private:
-    void createName();
-    int minZoomlevel() const override;
-    int maxZoomlevel() const override;
-    QString tilePosToUrl(const QGV::GeoTilePos& tilePos) const override;
-
-private:
-    QGV::TilesType mType;
-    QLocale mLocale;
-    int mServerNumber;
+    QGVMap* mMap;
+    QGVLayer* mItemsLayer;
 };

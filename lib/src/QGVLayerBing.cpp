@@ -49,6 +49,12 @@ QGVLayerBing::QGVLayerBing(QGV::TilesType type, QLocale locale, int serverNumber
 {
     createName();
     setDescription("Copyrights ©Microsoft");
+    initDB("bing.db");
+}
+
+QGVLayerBing::~QGVLayerBing()
+{
+    sqlite3_close(cache);
 }
 
 void QGVLayerBing::setType(QGV::TilesType type)

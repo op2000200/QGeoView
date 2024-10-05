@@ -28,6 +28,7 @@ public:
     explicit QGVLayerBing(QGV::TilesType type = QGV::TilesType::Schema,
                           QLocale locale = QLocale(),
                           int serverNumber = 0);
+    ~QGVLayerBing();
 
     void setType(QGV::TilesType type);
     void setLocale(const QLocale& locale);

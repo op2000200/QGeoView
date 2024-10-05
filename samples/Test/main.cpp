@@ -16,34 +16,22 @@
  * along with this program; if not, see https://www.gnu.org/licenses.
  ****************************************************************************/
 
-#pragma once
+#include <QApplication>
+#include <QCommandLineParser>
 
-#include "QGVLayerTilesOnline.h"
+#include "mainwindow.h"
 
-class QGV_LIB_DECL QGVLayerGoogle : public QGVLayerTilesOnline
+#include <sqlite3.h>
+
+
+const char* SQL = "CREATE TABLE IF NOT EXISTS foo(a,b,c); INSERT INTO FOO VALUES(1,2,3); INSERT INTO FOO SELECT * FROM FOO;";
+
+int main(int argc, char* argv[])
 {
-    Q_OBJECT
+    QApplication app(argc, argv);
+    app.setApplicationName("Test");
 
-public:
-    explicit QGVLayerGoogle(QGV::TilesType type = QGV::TilesType::Schema,
-                            QLocale locale = QLocale(),
-                            int serverNumber = 0);
-    ~QGVLayerGoogle();
-
-    void setType(QGV::TilesType type);
-    void setLocale(const QLocale& locale);
-
-    QGV::TilesType getType() const;
-    QLocale getLocale() const;
-
-private:
-    void createName();
-    int minZoomlevel() const override;
-    int maxZoomlevel() const override;
-    QString tilePosToUrl(const QGV::GeoTilePos& tilePos) const override;
-
-private:
-    QGV::TilesType mType;
-    QLocale mLocale;
-    int mServerNumber;
-};
+    MainWindow window;
+    window.show();
+    return app.exec();
+}
