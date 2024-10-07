@@ -54,7 +54,6 @@ QGVLayerBing::QGVLayerBing(QGV::TilesType type, QLocale locale, int serverNumber
 
 QGVLayerBing::~QGVLayerBing()
 {
-    sqlite3_close(cache);
 }
 
 void QGVLayerBing::setType(QGV::TilesType type)
@@ -88,7 +87,7 @@ void QGVLayerBing::createName()
         { QGV::TilesType::Hybrid, "QGV::Hybrid" },
     };
     // clang-format on
-    setName("Bing Maps (" + adapter[mType] + " " + mLocale.name() + ")");
+    setName("BingMaps(" + adapter[mType] + " " + mLocale.name() + ")");
 }
 
 int QGVLayerBing::minZoomlevel() const

@@ -57,7 +57,6 @@ QGVLayerGoogle::QGVLayerGoogle(QGV::TilesType type, QLocale locale, int serverNu
 
 QGVLayerGoogle::~QGVLayerGoogle()
 {
-    sqlite3_close(cache);
 }
 
 void QGVLayerGoogle::setType(QGV::TilesType type)
@@ -91,7 +90,7 @@ void QGVLayerGoogle::createName()
         { QGV::TilesType::Hybrid, "QGV::Hybrid" },
     };
     // clang-format on
-    setName("Google Maps (" + adapter[mType] + " " + mLocale.name() + ")");
+    setName("GoogleMaps(" + adapter[mType] + " " + mLocale.name() + ")");
 }
 
 int QGVLayerGoogle::minZoomlevel() const

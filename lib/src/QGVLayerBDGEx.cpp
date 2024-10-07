@@ -51,7 +51,6 @@ QGVLayerBDGEx::QGVLayerBDGEx(const QString& url)
 
 QGVLayerBDGEx::~QGVLayerBDGEx()
 {
-    sqlite3_close(cache);
 }
 
 void QGVLayerBDGEx::setUrl(const QString& url)

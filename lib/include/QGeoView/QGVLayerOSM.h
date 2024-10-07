@@ -19,6 +19,8 @@
 #pragma once
 
 #include "QGVLayerTilesOnline.h"
+#include <QSqlQuery>
+#include <QSqlDatabase>
 
 class QGV_LIB_DECL QGVLayerOSM : public QGVLayerTilesOnline
 {

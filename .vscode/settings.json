@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "qsql": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}

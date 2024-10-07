@@ -25,6 +25,7 @@
 #include <QSql>
 #include <QSqlQuery>
 #include <QSqlDatabase>
+#include <QSqlError>
 #include <sqlite3.h>
 
 class QGV_LIB_DECL QGVLayerTilesOnline : public QGVLayerTiles
@@ -37,8 +38,8 @@ public:
 protected:
     virtual QString tilePosToUrl(const QGV::GeoTilePos& tilePos) const = 0;
     void initDB(QString name);
-    sqlite3 *cache;
-
+    //virtual QSqlDatabase getDB();
+    QSqlDatabase *cache;
 private:
     void request(const QGV::GeoTilePos& tilePos) override;
     void cancel(const QGV::GeoTilePos& tilePos) override;

@@ -47,7 +47,6 @@ QGVLayerOSM::QGVLayerOSM(const QString& url)
 
 QGVLayerOSM::~QGVLayerOSM()
 {
-    sqlite3_close(cache);
 }
 
 void QGVLayerOSM::setUrl(const QString& url)

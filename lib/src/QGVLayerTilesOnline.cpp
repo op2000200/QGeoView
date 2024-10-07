@@ -21,32 +21,6 @@
 #include <iostream>
 #include <QDir>
 
-int callback(void *data, int argc, char **argv, char **azColName)
-{
-    for (int i = 0; i < argc; i++)
-    {
-        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-    }
-    printf("\n");
-    return 0;
-}
-
-static int callback2(void* data, int argc, char** argv, char** azColName) {
-    std::string* result = static_cast<std::string*>(data);
-    
-    for (int i = 0; i < argc; i++) {
-        // Добавляем данные в строку
-        if (argv[i]) {
-            *result += azColName[i];
-            *result += ": ";
-            *result += argv[i];
-            *result += "\n"; // Новая строка после каждого столбца
-        }
-    }
-    *result += "\n"; // Новая строка после каждой записи
-    return 0;
-}
-
 QGVLayerTilesOnline::~QGVLayerTilesOnline()
 {
     qDeleteAll(mRequest);
@@ -54,17 +28,14 @@ QGVLayerTilesOnline::~QGVLayerTilesOnline()
 
 void QGVLayerTilesOnline::initDB(QString name)
 {
-    sqlite3_open(name.toLocal8Bit().data(), &cache);
-    sqlite3_enable_load_extension(cache, 1);
-    char *err;
-    sqlite3_load_extension(cache,QDir::currentPath().append("/fileio.so").toLocal8Bit().data(),0,&err);
-    std::cout << err << std::endl;
-    sqlite3_exec(cache,"create table if not exists files (name text, data blob);",0,0,&err);
-    std::cout << err << std::endl;
-    //if (query.exec("SELECT load_extension(\"fileio.c\")"))
-    //cache.open();
-    //query.exec("create table if not exists files (name text, data blob);");
-    //std::cout << cache.tables()[0].toStdString() << std::endl;
+    cache = new QSqlDatabase;
+    cache[0] = QSqlDatabase::addDatabase("QSQLITE");
+    cache->setDatabaseName(name);
+    //std::cout << cache->databaseName().toStdString();
+    cache->open();
+    QSqlQuery query;
+    query.exec("create table if not exists files(name text, data blob);");
+    std::cout << cache->tables()[0].toStdString() << std::endl;
 
 }
 
@@ -102,102 +73,60 @@ void QGVLayerTilesOnline::cancel(const QGV::GeoTilePos& tilePos)
 
 void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTilePos& tilePos)
 {
+    QSqlQuery select;
+    QSqlQuery insert;
+    QSqlQuery update;
     if (reply->error() != QNetworkReply::NoError) {
         if (reply->error() != QNetworkReply::OperationCanceledError) {
             qgvCritical() << "ERROR" << reply->errorString();
         }
-        //check if it has that image
-        if (true)
+        QString name = QGVLayerTilesOnline::getName() + QString("tile(%1,%2,%3)")
+                        .arg(tilePos.zoom())
+                        .arg(tilePos.pos().x())
+                        .arg(tilePos.pos().y());
+        select.exec("select data from files where name='"+ name +"'");
+        auto tile = new QGVImage();
+        if (!select.next())
         {
-        char *err;
-            sqlite3_exec(cache,QString("select writefile('" + QString("(%1)tile(%2,%3,%4)%5")
-                            .arg(QGVLayerTilesOnline::getName())
-                            .arg(tilePos.zoom())
-                            .arg(tilePos.pos().x())
-                            .arg(tilePos.pos().y())
-                            .arg(".png") + "',data) from files where name ='" + QString("(%1)tile(%2,%3,%4)%5")
-                            .arg(QGVLayerTilesOnline::getName())
-                            .arg(tilePos.zoom())
-                            .arg(tilePos.pos().x())
-                            .arg(tilePos.pos().y())
-                            .arg(".png") + "';")
-                            .toLocal8Bit()
-                            .data() ,0,0,&err);
-            std::cout << err << std::endl;
-            QImage img(QString("(%1)tile(%2,%3,%4)%5")
-                            .arg(QGVLayerTilesOnline::getName())
-                            .arg(tilePos.zoom())
-                            .arg(tilePos.pos().x())
-                            .arg(tilePos.pos().y())
-                            .arg(".png"));
-            auto tile = new QGVImage();
+            qDebug() << "no data";
+            qDebug() << name;
             tile->setGeometry(tilePos.toGeoRect());
-            tile->loadImage(img);
             tile->setProperty("drawDebug",
-                            QString("%1\ntile(%2,%3,%4)")
-                                .arg(reply->url().toString())
-                                .arg(tilePos.zoom())
-                                .arg(tilePos.pos().x())
-                                .arg(tilePos.pos().y()));
-            removeReply(tilePos);
-            onTile(tilePos, tile);
-            system("rm *.png");
+                            QString("NO DATA"));
         }
-        else
-        {
-
-        }
+        qDebug() << "has response, showing";
+        qDebug() << name;
+        QByteArray data = select.value(0).toByteArray();
+        tile->setGeometry(tilePos.toGeoRect());
+        tile->loadImage(data);
+        tile->setProperty("drawDebug",
+                        QString("%1\ntile(%2,%3,%4)")
+                            .arg(reply->url().toString())
+                            .arg(tilePos.zoom())
+                            .arg(tilePos.pos().x())
+                            .arg(tilePos.pos().y()));
+        removeReply(tilePos);
+        onTile(tilePos, tile);
         return;
     }
     
     const auto rawImage = reply->readAll();
-    QImage img;
-    img.loadFromData(rawImage);
-    img.save(QString("cache/(%1)tile(%2,%3,%4)%5")
-                    .arg(QGVLayerTilesOnline::getName())
-                    .arg(tilePos.zoom())
-                    .arg(tilePos.pos().x())
-                    .arg(tilePos.pos().y())
-                    .arg(".png"),"PNG");
-
-    //add to db
-    char *err;
-    std::string res;
-    sqlite3_exec(cache,QString("select name from files where name ='" + QString("(%1)tile(%2,%3,%4)%5")
-                    .arg(QGVLayerTilesOnline::getName())
-                    .arg(tilePos.zoom())
-                    .arg(tilePos.pos().x())
-                    .arg(tilePos.pos().y())
-                    .arg(".png") + "';")
-                    .toLocal8Bit()
-                    .data() ,callback2,&res,&err);
-    //qgvCritical() << "1 " << QString::fromStdString(res) << " " << QString::fromStdString(err) << endl;
-    
-    //check if empty
-    if (true)
-    {
-        sqlite3_exec(cache,QString("insert into files(name,data) values('" + QString("(%1)tile(%2,%3,%4)%5")
-                        .arg(QGVLayerTilesOnline::getName())
+    QString name = QGVLayerTilesOnline::getName() + QString("tile(%1,%2,%3)")
                         .arg(tilePos.zoom())
                         .arg(tilePos.pos().x())
-                        .arg(tilePos.pos().y())
-                        .arg(".png") + "',readfile('" + QString("(%1)tile(%2,%3,%4)%5")
-                        .arg(QGVLayerTilesOnline::getName())
-                        .arg(tilePos.zoom())
-                        .arg(tilePos.pos().x())
-                        .arg(tilePos.pos().y())
-                        .arg(".png") + "'))")
-                        .toLocal8Bit()
-                        .data() ,0,0,&err);
-        std::cout << err << std::endl;
-    }
-    else
+                        .arg(tilePos.pos().y());
+    //std::cout << name.toStdString() << std::endl;
+    select.exec("select data from files where name='"+ name +"'");
+    if (!select.next())
     {
-        //not insert but update
+        qDebug() << "no responce, adding a row";
+        qDebug() << name;
+        insert.exec("insert into files(name,data) values('"+ name + "','"+ rawImage.constData() +"')");
     }
-    
-    system("rm *.png");
-
+    qDebug() << "has response, updating";
+    qDebug() << name;
+    //insert.exec("insert into files(name,data) values('"+ name + "','"+ rawImage.constData() +"')");
+    update.exec(QString("update files set data='").append(rawImage.constData()).append("' where name = '").append(name).append("'"));
     auto tile = new QGVImage();
     tile->setGeometry(tilePos.toGeoRect());
     tile->loadImage(rawImage);
@@ -209,38 +138,6 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
                         .arg(tilePos.pos().y()));
     removeReply(tilePos);
     onTile(tilePos, tile);
-    
-    
-    
-    //mine
-    /*
-    QImage img;
-    img.loadFromData(rawImage);
-    if(img.save(QString("(%1)tile(%2,%3,%4)%5")
-                    .arg(QGVLayerTilesOnline::getName())
-                    .arg(tilePos.zoom())
-                    .arg(tilePos.pos().x())
-                    .arg(tilePos.pos().y())
-                    .arg(".png"),"PNG"))
-    {
-        qgvDebug() << "cached " << QString("(%1)tile(%2,%3,%4)%5")
-                                    .arg(QGVLayerTilesOnline::getName())
-                                    .arg(tilePos.zoom())
-                                    .arg(tilePos.pos().x())
-                                    .arg(tilePos.pos().y())
-                                    .arg(".png");
-    }
-    else
-    {
-        qgvDebug() << "error while caching " << QString("(%1)tile(%2,%3,%4)%5")
-                                                    .arg(QGVLayerTilesOnline::getName())
-                                                    .arg(tilePos.zoom())
-                                                    .arg(tilePos.pos().x())
-                                                    .arg(tilePos.pos().y())
-                                                    .arg(".png");
-    }
-    */
-    //end of mine
 }
 
 void QGVLayerTilesOnline::removeReply(const QGV::GeoTilePos& tilePos)
