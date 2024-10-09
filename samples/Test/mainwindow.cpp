@@ -79,27 +79,6 @@ QGroupBox* MainWindow::createOptionsList()
     QGroupBox* groupBox = new QGroupBox(tr("Options"));
     groupBox->setLayout(new QVBoxLayout);
 
-    {
-        QCheckBox* checkButton = new QCheckBox("Draw debug info on map");
-        groupBox->layout()->addWidget(checkButton);
-
-        connect(checkButton, &QCheckBox::toggled, this, [this](const bool checked) {
-            QGV::setDrawDebug(checked);
-            mMap->refreshMap();
-        });
-
-        checkButton->setChecked(false);
-    }
-
-    {
-        QCheckBox* checkButton = new QCheckBox("Print debug to QDebug");
-        groupBox->layout()->addWidget(checkButton);
-
-        connect(checkButton, &QCheckBox::toggled, this, [this](const bool checked) { QGV::setPrintDebug(checked); });
-
-        checkButton->setChecked(false);
-    }
-
     QButtonGroup* group = new QButtonGroup(this);
     QRadioButton* radioButton;
 

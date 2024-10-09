@@ -75,7 +75,6 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
 {
     QSqlQuery select;
     QSqlQuery insert;
-    QSqlQuery update;
     if (reply->error() != QNetworkReply::NoError) {
         if (reply->error() != QNetworkReply::OperationCanceledError) {
             qgvCritical() << "ERROR" << reply->errorString();
@@ -84,7 +83,9 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
                         .arg(tilePos.zoom())
                         .arg(tilePos.pos().x())
                         .arg(tilePos.pos().y());
-        select.exec("select data from files where name='"+ name +"'");
+        qDebug() << "select prep " << select.prepare("select data from files where name = :name");
+        select.bindValue(":name", name);
+        qDebug() << "select exec " << select.exec();
         auto tile = new QGVImage();
         if (!select.next())
         {
@@ -94,17 +95,14 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
             tile->setProperty("drawDebug",
                             QString("NO DATA"));
         }
-        qDebug() << "has response, showing";
-        qDebug() << name;
-        QByteArray data = select.value(0).toByteArray();
-        tile->setGeometry(tilePos.toGeoRect());
-        tile->loadImage(data);
-        tile->setProperty("drawDebug",
-                        QString("%1\ntile(%2,%3,%4)")
-                            .arg(reply->url().toString())
-                            .arg(tilePos.zoom())
-                            .arg(tilePos.pos().x())
-                            .arg(tilePos.pos().y()));
+        else
+        {
+            qDebug() << "has response, showing";
+            qDebug() << name;
+            QByteArray data = select.value(0).toByteArray();
+            tile->setGeometry(tilePos.toGeoRect());
+            tile->loadImage(data);
+        }
         removeReply(tilePos);
         onTile(tilePos, tile);
         return;
@@ -115,27 +113,26 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
                         .arg(tilePos.zoom())
                         .arg(tilePos.pos().x())
                         .arg(tilePos.pos().y());
-    //std::cout << name.toStdString() << std::endl;
-    select.exec("select data from files where name='"+ name +"'");
+    qDebug() << "select prep" << select.prepare("select data from files " "where name = :name");
+    select.bindValue(":name", name);
+    qDebug() << "select exec " << select.exec();
+    auto tile = new QGVImage();
+    tile->setGeometry(tilePos.toGeoRect());
+    tile->loadImage(rawImage);
     if (!select.next())
     {
         qDebug() << "no responce, adding a row";
         qDebug() << name;
-        insert.exec("insert into files(name,data) values('"+ name + "','"+ rawImage.constData() +"')");
+        qDebug() << "insert prepare " << insert.prepare("insert into files (name,data) " "values(:name,:data)");
+        insert.bindValue(":name", name);
+        insert.bindValue(":data", rawImage);
+        qDebug() << "insert exec" << insert.exec();
     }
-    qDebug() << "has response, updating";
-    qDebug() << name;
-    //insert.exec("insert into files(name,data) values('"+ name + "','"+ rawImage.constData() +"')");
-    update.exec(QString("update files set data='").append(rawImage.constData()).append("' where name = '").append(name).append("'"));
-    auto tile = new QGVImage();
-    tile->setGeometry(tilePos.toGeoRect());
-    tile->loadImage(rawImage);
-    tile->setProperty("drawDebug",
-                    QString("%1\ntile(%2,%3,%4)")
-                        .arg(reply->url().toString())
-                        .arg(tilePos.zoom())
-                        .arg(tilePos.pos().x())
-                        .arg(tilePos.pos().y()));
+    else
+    {
+        qDebug() << "has response, doing nothing";
+        qDebug() << name;
+    }
     removeReply(tilePos);
     onTile(tilePos, tile);
 }
