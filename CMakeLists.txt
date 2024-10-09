@@ -11,7 +11,6 @@ add_subdirectory(lib)
 if (${BUILD_EXAMPLES})
   message(STATUS "Enabled building of examples")
   add_subdirectory(samples/shared)
-  add_subdirectory(samples/raster)
   add_subdirectory(samples/Test)
 
   if(GDAL_FOUND)
