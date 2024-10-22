@@ -30,12 +30,40 @@ void QGVLayerTilesOnline::initDB(QString name)
 {
     cache = new QSqlDatabase;
     cache[0] = QSqlDatabase::addDatabase("QSQLITE");
+    //implement database connection names for example:
+    //cache[0] = QSqlDatabase::addDatabase("QSQLITE", name);
     cache->setDatabaseName(name);
     cache->open();
     QSqlQuery query;
     query.exec("create table if not exists files(name text, data blob);");
-    std::cout << cache->tables()[0].toStdString() << std::endl;
+}
 
+QByteArray QGVLayerTilesOnline::getTileFromCache(QString name)
+{
+    QSqlQuery select;
+    if (!select.prepare("select data from files where name = :name"))
+        return QByteArray();
+    select.bindValue(":name", name);
+    if (!select.exec())
+        return QByteArray();
+    if (!select.next())
+        return QByteArray();
+    else
+    {
+        return select.value(0).toByteArray();
+    }
+}
+
+bool QGVLayerTilesOnline::addTileToCache(QString name, QByteArray data)
+{
+    QSqlQuery insert;
+        if (!insert.prepare("insert into files (name,data) " "values(:name,:data)"))
+            return false;
+        insert.bindValue(":name", name);
+        insert.bindValue(":data", data);
+        if (!insert.exec())
+            return false;
+    return true;
 }
 
 void QGVLayerTilesOnline::request(const QGV::GeoTilePos& tilePos)
@@ -74,7 +102,6 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
 {
     QSqlQuery select;
     QSqlQuery insert;
-    qDebug() << cache->databaseName();
     if (reply->error() != QNetworkReply::NoError) {
         if (reply->error() != QNetworkReply::OperationCanceledError) {
             qgvCritical() << "ERROR" << reply->errorString();
@@ -83,55 +110,40 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
                         .arg(tilePos.zoom())
                         .arg(tilePos.pos().x())
                         .arg(tilePos.pos().y());
-        qDebug() << "select prep" << select.prepare("select data from files where name = :name");
-        select.bindValue(":name", name);
-        qDebug() << "select exec" << select.exec();
         auto tile = new QGVImage();
-        if (!select.next())
+        QByteArray data = getTileFromCache(name);
+        tile->setGeometry(tilePos.toGeoRect());
+        if (!data.isEmpty())
         {
-            qDebug() << "no data";
-            qDebug() << name;
-            tile->setGeometry(tilePos.toGeoRect());
-            tile->setProperty("drawDebug",
-                            QString("NO DATA"));
+            tile->loadImage(data);
         }
         else
         {
-            qDebug() << "has response, showing";
-            qDebug() << name;
-            QByteArray data = select.value(0).toByteArray();
-            tile->setGeometry(tilePos.toGeoRect());
-            tile->loadImage(data);
+            //no data label not implemented, can be done in default tile constructor
         }
         removeReply(tilePos);
         onTile(tilePos, tile);
         return;
     }
-    
-    const auto rawImage = reply->readAll();
+
     QString name = QGVLayerTilesOnline::getName() + QString("tile(%1,%2,%3)")
                         .arg(tilePos.zoom())
                         .arg(tilePos.pos().x())
                         .arg(tilePos.pos().y());
-    qDebug() << "select prep" << select.prepare("select data from files " "where name = :name");
-    select.bindValue(":name", name);
-    qDebug() << "select exec" << select.exec();
     auto tile = new QGVImage();
+    QByteArray data = getTileFromCache(name);
     tile->setGeometry(tilePos.toGeoRect());
-    tile->loadImage(rawImage);
-    if (!select.next())
+    if (!data.isEmpty())
     {
-        qDebug() << "no responce, adding a row";
-        qDebug() << name;
-        qDebug() << "insert prepare " << insert.prepare("insert into files (name,data) " "values(:name,:data)");
-        insert.bindValue(":name", name);
-        insert.bindValue(":data", rawImage);
-        qDebug() << "insert exec" << insert.exec();
+        tile->loadImage(data);
     }
     else
     {
-        qDebug() << "has response, doing nothing";
-        qDebug() << name;
+        //not found need to load and cache
+        const auto rawImage = reply->readAll();
+        tile->loadImage(rawImage);
+        if (!addTileToCache(name, rawImage))
+            qDebug() << "failed to cache" << name;
     }
     removeReply(tilePos);
     onTile(tilePos, tile);

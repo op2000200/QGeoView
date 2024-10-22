@@ -39,6 +39,9 @@ protected:
     virtual QString tilePosToUrl(const QGV::GeoTilePos& tilePos) const = 0;
     void initDB(QString name);
     QSqlDatabase *cache;
+
+    QByteArray getTileFromCache(QString name);
+    bool addTileToCache(QString name, QByteArray data);
 private:
     void request(const QGV::GeoTilePos& tilePos) override;
     void cancel(const QGV::GeoTilePos& tilePos) override;
