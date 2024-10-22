@@ -74,6 +74,7 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
 {
     QSqlQuery select;
     QSqlQuery insert;
+    qDebug() << cache->databaseName();
     if (reply->error() != QNetworkReply::NoError) {
         if (reply->error() != QNetworkReply::OperationCanceledError) {
             qgvCritical() << "ERROR" << reply->errorString();
@@ -82,9 +83,9 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
                         .arg(tilePos.zoom())
                         .arg(tilePos.pos().x())
                         .arg(tilePos.pos().y());
-        qDebug() << "select prep " << select.prepare("select data from files where name = :name");
+        qDebug() << "select prep" << select.prepare("select data from files where name = :name");
         select.bindValue(":name", name);
-        qDebug() << "select exec " << select.exec();
+        qDebug() << "select exec" << select.exec();
         auto tile = new QGVImage();
         if (!select.next())
         {
@@ -114,7 +115,7 @@ void QGVLayerTilesOnline::onReplyFinished(QNetworkReply* reply, const QGV::GeoTi
                         .arg(tilePos.pos().y());
     qDebug() << "select prep" << select.prepare("select data from files " "where name = :name");
     select.bindValue(":name", name);
-    qDebug() << "select exec " << select.exec();
+    qDebug() << "select exec" << select.exec();
     auto tile = new QGVImage();
     tile->setGeometry(tilePos.toGeoRect());
     tile->loadImage(rawImage);

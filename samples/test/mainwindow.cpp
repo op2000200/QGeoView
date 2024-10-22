@@ -53,10 +53,6 @@ MainWindow::MainWindow()
     // Widgets
     mMap->addWidget(new QGVWidgetZoom());
 
-    // Background layer
-    auto osmLayer = new QGVLayerOSM();
-    mMap->addItem(osmLayer);
-
     // Options list
     centralWidget()->layout()->addWidget(createOptionsList());
 
