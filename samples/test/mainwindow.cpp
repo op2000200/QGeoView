@@ -20,7 +20,7 @@
 
 #include <QCheckBox>
 #include <QTimer>
-#include <QVBoxLayout>
+#include <QVBoxLayout> 
 
 #include <QGeoView/QGVLayerOSM.h>
 #include <QGeoView/QGVWidgetCompass.h>
@@ -99,18 +99,7 @@ QGroupBox* MainWindow::createOptionsList()
             layer->show();
         });
 
-        if (name == "CUSTOM_OSM") {
-            auto* widget = new QWidget();
-            widget->setLayout(new QHBoxLayout);
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-            widget->layout()->setContentsMargins(QMargins{ 0, 0, 0, 0 });
-#else
-            widget->layout()->setMargin(0);
-#endif
-        } else {
-            groupBox->layout()->addWidget(radioButton);
-        }
+        groupBox->layout()->addWidget(radioButton);
     }
 
     // Last map will be default
