@@ -15,8 +15,6 @@ else()
     set(QT_VERSION 6 CACHE STRING "Qt version for QGeoView")
 endif()
 
-find_package(SQLite3 REQUIRED)
-
 find_package(Qt${QT_VERSION} REQUIRED COMPONENTS
     Core
     Gui
@@ -40,5 +38,4 @@ target_link_libraries(test
     Qt${QT_VERSION}::Sql
     QGeoView
     qgeoview-samples-shared
-    SQLite::SQLite3
 )

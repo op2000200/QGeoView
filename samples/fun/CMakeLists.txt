@@ -18,6 +18,7 @@ find_package(Qt${QT_VERSION} REQUIRED COMPONENTS
     Gui
     Widgets
     Network
+    Sql
 )
 
 add_executable(qgeoview-samples-fun
@@ -36,6 +37,7 @@ target_link_libraries(qgeoview-samples-fun
     Qt${QT_VERSION}::Network
     Qt${QT_VERSION}::Gui
     Qt${QT_VERSION}::Widgets
+    Qt${QT_VERSION}::Sql
     QGeoView
     qgeoview-samples-shared
 )

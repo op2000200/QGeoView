@@ -38,20 +38,12 @@ public:
 protected:
     virtual QString tilePosToUrl(const QGV::GeoTilePos& tilePos) const = 0;
     void initDB(QString name);
-    //virtual QSqlDatabase getDB();
     QSqlDatabase *cache;
 private:
     void request(const QGV::GeoTilePos& tilePos) override;
     void cancel(const QGV::GeoTilePos& tilePos) override;
     void onReplyFinished(QNetworkReply* reply, const QGV::GeoTilePos& tilePos);
     void removeReply(const QGV::GeoTilePos& tilePos);
-
-    bool isCached();
-    bool isOutdated();
-    void addToCache();
-    //what type ii getting from cache
-    void getFromCache();
-
 private:
     QMap<QGV::GeoTilePos, QNetworkReply*> mRequest;
 };

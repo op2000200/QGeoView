@@ -1,4 +1,4 @@
-TARGET = qgeoview-samples-debug
+TARGET = qgeoview-samples-test
 TEMPLATE = app
 CONFIG-= console
 

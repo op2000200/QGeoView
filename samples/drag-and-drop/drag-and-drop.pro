@@ -2,7 +2,7 @@ TARGET = qgeoview-samples-drag-and-drop
 TEMPLATE = app
 CONFIG-= console
 
-QT += gui widgets network
+QT += gui widgets network sql
 
 include(../lib.pri)
 include(../shared.pri)

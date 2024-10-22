@@ -31,7 +31,6 @@ void QGVLayerTilesOnline::initDB(QString name)
     cache = new QSqlDatabase;
     cache[0] = QSqlDatabase::addDatabase("QSQLITE");
     cache->setDatabaseName(name);
-    //std::cout << cache->databaseName().toStdString();
     cache->open();
     QSqlQuery query;
     query.exec("create table if not exists files(name text, data blob);");

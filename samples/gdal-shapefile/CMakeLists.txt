@@ -18,6 +18,7 @@ find_package(Qt${QT_VERSION} REQUIRED COMPONENTS
     Gui
     Widgets
     Network
+    Sql
 )
 
 add_executable(qgeoview-samples-gdal-shapefile
@@ -34,6 +35,7 @@ target_link_libraries(qgeoview-samples-gdal-shapefile
     Qt${QT_VERSION}::Network
     Qt${QT_VERSION}::Gui
     Qt${QT_VERSION}::Widgets
+    Qt${QT_VERSION}::Sql
     QGeoView
     qgeoview-samples-shared
     GDAL::GDAL
